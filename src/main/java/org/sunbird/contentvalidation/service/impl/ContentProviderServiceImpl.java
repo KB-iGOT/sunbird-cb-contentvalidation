@@ -75,7 +75,9 @@ public class ContentProviderServiceImpl implements ContentProviderService {
                 String container = StringUtils.substringBefore(uri, "/");
                 String relativePath = StringUtils.substringAfter(uri, "/");
                 logger.info("Got filePath with relative path: " + relativePath);
-                return storageService.getSignedUrl(container, relativePath, 30);
+                String downloadPath =  storageService.getSignedUrl(container, relativePath, 30);
+                logger.info("The download path: " + downloadPath);
+                return downloadPath;
             } catch (MalformedURLException e) {
                 logger.error("url is not proper{}", downloadUrl, e);
                 throw new RuntimeException(e);
