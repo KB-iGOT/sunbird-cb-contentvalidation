@@ -47,4 +47,8 @@ public class StorageServiceImpl implements StorageService {
         }
     }
 
+    @Override
+    public String getSignedUrl(String container, String path, int ttl) {
+        return storageService.getPutSignedURL(container, path, Option.apply(ttl), Option.apply("r"), Option.empty());
+    }
 }
