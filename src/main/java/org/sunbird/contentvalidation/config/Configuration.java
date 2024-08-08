@@ -46,5 +46,18 @@ public class Configuration {
 	@Value("${profanity.image.service.path}")
 	private String profanityImageServicePath;
 
+	@Value("${cloud.container.name}")
+	private String cloudContainerName;
 
+	@Value("${cloud.storage.type.name}")
+	private String cloudStorageTypeName;
+
+	@Value("${cloud.storage.key}")
+	private String cloudStorageKey;
+
+	@Value("${cloud.storage.secret}")
+	private String cloudStorageSecret;
+
+	@Value("${cloud.storage.endpoint}")
+	private String cloudStorageEndpoint;
 }
