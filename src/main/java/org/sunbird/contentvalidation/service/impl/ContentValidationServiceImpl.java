@@ -315,7 +315,7 @@ public class ContentValidationServiceImpl implements ContentValidationService {
 					}
 				}
 				response.incrementTotalNoOfPagesCompleted();
-				extractImagesAndUpdateThPdfeResponse(fileName, doc.getPages().get(p), p, response);
+				//extractImagesAndUpdateThPdfeResponse(fileName, doc.getPages().get(p), p, response);
 				long perPageTime = System.currentTimeMillis() - startTime;
 
 				if (log.isDebugEnabled()) {
