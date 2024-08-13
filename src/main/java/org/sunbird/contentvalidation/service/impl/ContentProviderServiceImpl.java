@@ -98,7 +98,6 @@ public class ContentProviderServiceImpl implements ContentProviderService {
             String uri = null;
             uri = StringUtils.substringAfter(new URL(downloadUrl).getPath(), "/");
             String filePath = StringUtils.substringAfter(uri, "/");
-            logger.info("subContainerName: " + filePath);
             String subContainerName = StringUtils.substringBefore(filePath, "/");
             logger.info("subContainerName: " + subContainerName);
             String fileNamePath = StringUtils.substringAfter(filePath, "/");
@@ -115,7 +114,6 @@ public class ContentProviderServiceImpl implements ContentProviderService {
             try {
                 File file = new File(Constants.LOCAL_BASE_PATH + fileName);
                 if (file.exists()) {
-                    logger.info("The fileName tmp path is: " + file.getAbsolutePath());
                     file.delete();
                 }
             } catch (Exception e1) {
