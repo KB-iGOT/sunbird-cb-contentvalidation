@@ -115,6 +115,7 @@ public class ContentProviderServiceImpl implements ContentProviderService {
             try {
                 File file = new File(Constants.LOCAL_BASE_PATH + fileName);
                 if (file.exists()) {
+                    logger.info("The fileName tmp path is: " + file.getAbsolutePath());
                     file.delete();
                 }
             } catch (Exception e1) {
