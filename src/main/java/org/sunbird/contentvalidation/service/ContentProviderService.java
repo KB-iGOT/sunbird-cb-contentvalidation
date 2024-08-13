@@ -10,5 +10,7 @@ public interface ContentProviderService {
 
 	public HierarchyResponse getHeirarchyResponse(String rootOrg, String org, String contentId, String userId);
 
+	public InputStream getContentFileV2(String downloadUrl);
+
 
 }

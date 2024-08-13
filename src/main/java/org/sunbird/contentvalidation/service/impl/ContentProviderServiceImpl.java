@@ -14,9 +14,13 @@ import org.sunbird.contentvalidation.service.ContentProviderService;
 import org.sunbird.contentvalidation.service.StorageService;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 
@@ -75,7 +79,7 @@ public class ContentProviderServiceImpl implements ContentProviderService {
                 String container = StringUtils.substringBefore(uri, "/");
                 String relativePath = StringUtils.substringAfter(uri, "/");
                 logger.info("Got filePath with relative path: " + relativePath);
-                String downloadPath =  storageService.getSignedUrl(container, relativePath, 30);
+                String downloadPath = storageService.getSignedUrl(container, relativePath, 30);
                 logger.info("The download path: " + downloadPath);
                 return downloadPath;
             } catch (MalformedURLException e) {
@@ -84,6 +88,37 @@ public class ContentProviderServiceImpl implements ContentProviderService {
             }
         } else {
             return downloadUrl;
+        }
+    }
+
+    @Override
+    public InputStream getContentFileV2(String downloadUrl) {
+        String fileName = null;
+        try {
+            String uri = null;
+            uri = StringUtils.substringAfter(new URL(downloadUrl).getPath(), "/");
+            String filePath = StringUtils.substringAfter(uri, "/");
+            logger.info("subContainerName: " + filePath);
+            String subContainerName = StringUtils.substringBefore(filePath, "/");
+            logger.info("subContainerName: " + subContainerName);
+            String fileNamePath = StringUtils.substringAfter(filePath, "/");
+            logger.info("The download path: " + fileNamePath);
+            storageService.downloadFile(fileNamePath, subContainerName);
+            fileName = StringUtils.substringAfterLast(filePath, "/");
+            logger.info("The fileName: " + fileName);
+            Path tmpPath = Paths.get(Constants.LOCAL_BASE_PATH + fileName);
+            return Files.newInputStream(tmpPath);
+        } catch (Exception e) {
+            logger.error("Error while processing request and not able to process file", e);
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                File file = new File(Constants.LOCAL_BASE_PATH + fileName);
+                if (file.exists()) {
+                    file.delete();
+                }
+            } catch (Exception e1) {
+            }
         }
     }
 }

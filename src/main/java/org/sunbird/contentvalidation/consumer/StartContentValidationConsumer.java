@@ -35,7 +35,7 @@ public class StartContentValidationConsumer {
 					ContentPdfValidation.class);
 			log.info("Received Topic Request : {}", contentPdfValidation);
 			repoService.insertStartData(contentPdfValidation.getContentId(), contentPdfValidation.getFileName());
-			validationService.validatePdfContent(contentPdfValidation);
+			validationService.validatePdfContentV2(contentPdfValidation);
 		} catch (IOException e) {
 			log.error("Failed to process the ContentValidation Request. Error: ", e);
 		}
