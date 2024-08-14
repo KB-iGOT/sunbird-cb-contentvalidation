@@ -66,4 +66,6 @@ public class Constants {
 	public static final int OFFENSIVE = 2;
 
 	public static final int EXTREMELY_OFFENSIVE = 3;
+
+	public static final String LOCAL_BASE_PATH= "/tmp/";
 }

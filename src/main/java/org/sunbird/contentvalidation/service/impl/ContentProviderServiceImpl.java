@@ -1,17 +1,26 @@
 package org.sunbird.contentvalidation.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 import org.sunbird.contentvalidation.config.Configuration;
 import org.sunbird.contentvalidation.config.Constants;
 import org.sunbird.contentvalidation.model.HierarchyResponse;
 import org.sunbird.contentvalidation.service.ContentProviderService;
+import org.sunbird.contentvalidation.service.StorageService;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 
@@ -27,12 +36,18 @@ public class ContentProviderServiceImpl implements ContentProviderService {
     @Autowired
     private ObjectMapper mapper;
 
+    private Logger logger = LoggerFactory.getLogger(getClass().getName());
+
+    @Autowired
+    private StorageService storageService;
+
+
     @Override
     public InputStream getContentFile(String downloadUrl) {
         if (downloadUrl.contains(Constants.DOWNLOAD_URL_PREFIX)) {
             downloadUrl = downloadUrl.replace(Constants.DOWNLOAD_URL_PREFIX, configuration.getContentServiceHost());
         }
-        byte[] byteStream = outboundRequestHandlerService.fetchByteStream(downloadUrl);
+        byte[] byteStream = outboundRequestHandlerService.fetchByteStream(getSignedUrl(downloadUrl));
         return new ByteArrayInputStream(byteStream);
     }
 
@@ -54,5 +69,55 @@ public class ContentProviderServiceImpl implements ContentProviderService {
             throw new NoSuchElementException();
         }
         return response;
+    }
+
+    private String getSignedUrl(String downloadUrl) {
+        logger.info("downloadFile Url: " + downloadUrl);
+        if (downloadUrl.startsWith("http")) {
+            try {
+                String uri = StringUtils.substringAfter(new URL(downloadUrl).getPath(), "/");
+                String container = StringUtils.substringBefore(uri, "/");
+                String relativePath = StringUtils.substringAfter(uri, "/");
+                logger.info("Got filePath with relative path: " + relativePath);
+                String downloadPath = storageService.getSignedUrl(container, relativePath, 30);
+                logger.info("The download path: " + downloadPath);
+                return downloadPath;
+            } catch (MalformedURLException e) {
+                logger.error("url is not proper{}", downloadUrl, e);
+                throw new RuntimeException(e);
+            }
+        } else {
+            return downloadUrl;
+        }
+    }
+
+    @Override
+    public InputStream getContentFileV2(String downloadUrl) {
+        String fileName = null;
+        try {
+            String uri = null;
+            uri = StringUtils.substringAfter(new URL(downloadUrl).getPath(), "/");
+            String filePath = StringUtils.substringAfter(uri, "/");
+            String subContainerName = StringUtils.substringBefore(filePath, "/");
+            logger.info("subContainerName: " + subContainerName);
+            String fileNamePath = StringUtils.substringAfter(filePath, "/");
+            logger.info("The download path: " + fileNamePath);
+            storageService.downloadFile(fileNamePath, subContainerName);
+            fileName = StringUtils.substringAfterLast(filePath, "/");
+            logger.info("The fileName: " + fileName);
+            Path tmpPath = Paths.get(Constants.LOCAL_BASE_PATH + fileName);
+            return Files.newInputStream(tmpPath);
+        } catch (Exception e) {
+            logger.error("Error while processing request and not able to process file", e);
+            throw new RuntimeException(e);
+        } finally {
+            try {
+                File file = new File(Constants.LOCAL_BASE_PATH + fileName);
+                if (file.exists()) {
+                    file.delete();
+                }
+            } catch (Exception e1) {
+            }
+        }
     }
 }

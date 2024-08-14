@@ -16,4 +16,7 @@ public interface ContentValidationService {
 
 	public PdfDocValidationResponse validateLocalPdfContent(ContentPdfValidation contentPdfValidation)
 			throws IOException;
+
+	public PdfDocValidationResponse validatePdfContentV2(ContentPdfValidation contentPdfValidation)
+			throws IOException;
 }

@@ -315,7 +315,7 @@ public class ContentValidationServiceImpl implements ContentValidationService {
 					}
 				}
 				response.incrementTotalNoOfPagesCompleted();
-				extractImagesAndUpdateThPdfeResponse(fileName, doc.getPages().get(p), p, response);
+				//extractImagesAndUpdateThPdfeResponse(fileName, doc.getPages().get(p), p, response);
 				long perPageTime = System.currentTimeMillis() - startTime;
 
 				if (log.isDebugEnabled()) {
@@ -429,5 +429,41 @@ public class ContentValidationServiceImpl implements ContentValidationService {
 			log.error(e);
 		}
 		return mapper.convertValue(response, Map.class);
+	}
+
+	/**
+	 * Provides the Profanity analysis for PDF content
+	 *
+	 * @param contentPdfValidation - Contains PDF File details
+	 *
+	 * @return Returns the validation details of the given PDF file
+	 */
+	public PdfDocValidationResponse validatePdfContentV2(ContentPdfValidation contentPdfValidation) throws IOException {
+		StringBuilder logStr = null;
+		PdfDocValidationResponse response =  null;
+		if (log.isDebugEnabled()) {
+			logStr = new StringBuilder();
+			logStr.append("ValidatePDFContent request: ").append(mapper.writeValueAsString(contentPdfValidation));
+		}
+		long startTime = System.currentTimeMillis();
+		InputStream inputStream = contentProviderService.getContentFileV2(contentPdfValidation.getPdfDownloadUrl());
+		try {
+			if (logStr != null) {
+				logStr.append("Time taken to download PDF File: ").append(System.currentTimeMillis() - startTime)
+						.append(" milliseconds");
+			}
+			String fileName = contentPdfValidation.getPdfDownloadUrl().split("/")[7];
+			response = performProfanityAnalysis(inputStream, fileName,
+					contentPdfValidation.getContentId());
+			if (logStr != null) {
+				logStr.append("Time take to validate PDF Content: ").append(System.currentTimeMillis() - startTime)
+						.append(" milliseconds");
+				log.debug(logStr.toString());
+			}
+		}
+		finally {
+			IOUtils.closeQuietly(inputStream);
+		}
+		return response;
 	}
 }
